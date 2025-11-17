@@ -1,0 +1,8 @@
+cellpose
+gradio>=5.35.0
+spaces
+opencv-python
+matplotlib
+Pillow
+numpy
+huggingface_hub
