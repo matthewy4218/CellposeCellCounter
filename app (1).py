@@ -18,7 +18,7 @@ MODEL_OPTIONS = {
 loaded_models = {}
 
 def extract_region_from_editor(editor_data):
-    """Extract the selected region from ImageEditor data"""
+    """Extract the selected region """
     if editor_data is None:
         return None, None
     
@@ -68,34 +68,24 @@ def extract_region_from_editor(editor_data):
             return None, None
 
 def classify_cells_by_blueness(image_np, masks, blue_threshold):
-    """
-    Classify cells as dead (blue) or alive based on single blueness metric
    
-    Args:
-        image_np: RGB image array
-        masks: Cellpose segmentation masks
-        blue_threshold: Single threshold value (0-100) for blueness detection
     
-    Returns:
-        dead_count, alive_count, colored_overlay
-    """
-    # Ensure image_np is RGB for consistency with HSV conversion
+    # Ensure image_np is RGB 
     if len(image_np.shape) == 2:
         image_np = cv2.cvtColor(image_np, cv2.COLOR_GRAY2RGB)
     elif len(image_np.shape) == 3 and image_np.shape[2] == 4:
         image_np = cv2.cvtColor(image_np, cv2.COLOR_RGBA2RGB)
 
-    # Convert RGB to HSV
+    #convert
     hsv = cv2.cvtColor(image_np, cv2.COLOR_RGB2HSV)
     
     # Calculate blueness index for each pixel
     hue = hsv[:, :, 0].astype(np.float32)
     saturation = hsv[:, :, 1].astype(np.float32)
     
-    # Hue score: peaks around 115 (blue in HSV), drops off towards edges
-    # Handle hue wrap-around for blue detection (100-130 range)
+    # Hue score
     hue_distance = np.minimum(np.abs(hue - 115), 180 - np.abs(hue - 115))
-    hue_score = np.maximum(0, 1 - hue_distance / 65)  # 65 gives good blue range
+    hue_score = np.maximum(0, 1 - hue_distance / 65)  # 65 good blue range
     
     # Combine hue proximity with saturation intensity
     blueness = hue_score * (saturation / 255.0)
@@ -112,7 +102,6 @@ def classify_cells_by_blueness(image_np, masks, blue_threshold):
     
     # Classify each cell
     for cell_id in cell_ids:
-        # Get mask for this specific cell
         cell_mask = (masks == cell_id)
         
         # Calculate average blueness for this cell
@@ -125,7 +114,7 @@ def classify_cells_by_blueness(image_np, masks, blue_threshold):
             alive_cells.append(cell_id)
     
     # Create colored overlay
-    overlay = image_np.copy().astype(np.float32) # Ensure float for blending
+    overlay = image_np.copy().astype(np.float32) 
     
     # Color dead cells red, alive cells green
     for cell_id in dead_cells:
